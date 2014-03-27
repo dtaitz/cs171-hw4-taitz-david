@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title></title>
+</head>
+<body>
+<script src="http://d3js.org/d3.v3.min.js"></script>
+<script src="http://d3js.org/queue.v1.min.js"></script>
+<script src="http://d3js.org/topojson.v1.min.js"></script>
+<script type="text/javascript" src="../jquery-1.11.0.min.js"></script>
+<script src="../libs/FileSaver.js"></script>
+
+<div id="vis"></div>
+
+
+<script>
+
+
+    d3.json("../data/allData2003_2004.json",function(error,data){
+       console.log(data);
+
+        var allDates = {};
+        var timeParser = d3.time.format("%b %-d, %Y %X %p");
+
+        var aggregateMap = {};
+        
+        
+		Object.keys(data).forEach(function(usafid){
+           
+            var sumDate=0; 
+            var hourlyList = {};
+
+            for (i = 0; i < 24; i++){
+                hourlyList[i]=0;
+            }
+            
+
+           for (i = 0; i < data[usafid].length; i++){
+                var value = data[usafid][i].value;
+                hourlyList[i%24] += value; 
+                sumDate += value;
+           }
+            
+            /*for (i = 0; i < data[usafid].length; i++){
+
+                var checkDate = new Date(data[usafid][i].date);
+
+                var parsedDate = timeParser(checkDate);
+                //console.log(parsedDate);
+                var value = data[usafid][i].value;
+                hourlyList[parsedDate]=value;
+                //console.log(hourlyList);
+                sumDate += value;
+                //console.log(sumDate)
+
+            }*/
+            //console.log(sumDate);
+            aggregateMap[usafid]={};
+            aggregateMap[usafid]["sum"] = sumDate;
+            aggregateMap[usafid]["hourly"] = hourlyList;
+    
+        }) 
+
+        //console.log(aggregateMap);
+
+        saveToFile(aggregateMap,"reducedMonthStationHour2003_2004.json")
+
+
+
+    })
+
+    var saveToFile = function(object, filename){
+        var blob, blobText;
+        blobText = [JSON.stringify(object)];
+        blob = new Blob(blobText, {
+            type: "text/plain;charset=utf-8"
+        });
+        saveAs(blob, filename);
+    }
+
+
+</script>
+
+
+</body>
+</html>
